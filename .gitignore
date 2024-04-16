@@ -1,0 +1,10 @@
+﻿.vs/BLGatewayOnContainers/config
+.vs/BLGatewayOnContainers/DesignTimeBuild
+.vs/BLGatewayOnContainers/FileContentIndex
+.vs/BLGatewayOnContainers/v17
+.vs/ProjectEvaluation
+obj
+src/Microservices/ABRSWebApi/.vs
+src/Microservices/ABRSWebApi/bin
+src/Microservices/GatewayGrpcService/bin
+bin

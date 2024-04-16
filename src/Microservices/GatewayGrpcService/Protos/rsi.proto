@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option csharp_namespace = "GatewayGrpcService.Protos";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+service GatewayGrpcService {
+  rpc GetGatewayMessages (RequestParams) returns (stream RSIMessage) {
+    option (google.api.http) = {
+      get: "/gateway"
+    };
+  }
+}
+
+message RequestParams {}
+
+
+message RSIMessage {
+    int32 id = 1;
+    string collection_code = 2;
+    string shelfmark = 3;
+    string volume_number = 4;
+    string storage_location_code = 5;
+    string author = 6;
+    string title = 7;
+    google.protobuf.Timestamp publication_date = 8;
+    google.protobuf.Timestamp periodical_date = 9;
+    string article_line1 = 10;
+    string article_line2 = 11;
+    string catalogue_record_url = 12;
+    string further_details_url = 13;
+    string dt_required = 14;
+    string route = 15;
+    string reading_room_staff_area = 16;
+    string seat_number = 17;
+    string reading_category = 18;
+    string identifier = 19;
+    string reader_name = 20;
+    int32 reader_type = 21;
+    string operator_information = 22;
+    string item_identity = 23;
+}
+
+

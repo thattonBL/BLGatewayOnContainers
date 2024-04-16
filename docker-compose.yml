@@ -1,0 +1,71 @@
+version: '3.4'
+
+networks:
+  gatewaynetwork:
+    driver: bridge
+
+volumes:
+    gatewaydb_data:
+      driver: local
+
+services:
+  gatewaydb:
+    container_name: gateway-db
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    stdin_open: true
+    ports:
+        - "1433:1433"
+    environment:
+        - ACCEPT_EULA=Y
+        - SA_PASSWORD=password@12345#
+    restart: always
+    networks:
+        - gatewaynetwork
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P password@12345# -Q 'SELECT 1' || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    volumes:
+         - ./gatewaydb_data:/docker-entrypoint-initdb.d
+  gatewaydb.conficurator:
+      image: mcr.microsoft.com/mssql-tools:latest
+      container_name: gateway-db-configurator
+      user: root
+      volumes:
+         - ./gatewaydb_data:/docker-entrypoint-initdb.d
+      depends_on:
+         gatewaydb:
+           condition: service_healthy
+      command: bash -c '/opt/mssql-tools/bin/sqlcmd -S gateway-db -U sa -P password@12345# -i /docker-entrypoint-initdb.d/init.sql; echo "------------------------------ALLLL DONNNNNNEEEEEE!!!!---------------------------------";'
+      networks:
+         - gatewaynetwork
+  abrswebapi:
+        container_name: abrs-web-api
+        image: ${DOCKER_REGISTRY-}abrswebapi
+        build:
+            context: .
+            dockerfile: src/Microservices/ABRSWebApi/Dockerfile
+        depends_on:
+          - gatewaydb
+        environment:
+          - DB_HOST=gateway-db
+          - DB_NAME=Gateway
+          - DB_SA_PASSWORD=password@12345#
+        networks:
+          - gatewaynetwork 
+  gatewaygrpcservice:
+      container_name: gateway-grpc-service
+      image: ${DOCKER_REGISTRY-}gatewaygrpcservice
+      build:
+          context: .
+          dockerfile: src/Microservices/GatewayGrpcService/Dockerfile
+      depends_on:
+            - gatewaydb
+      environment:
+            - DB_HOST=gateway-db
+            - DB_NAME=Gateway
+            - DB_SA_PASSWORD=password@12345#
+      networks:
+            - gatewaynetwork
