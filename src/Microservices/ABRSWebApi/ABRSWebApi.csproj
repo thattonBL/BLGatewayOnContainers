@@ -17,4 +17,11 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\IntegrationEventLogEF\IntegrationEventLogEF.csproj" />
+    <ProjectReference Include="..\..\Common\Services.Common\Services.Common.csproj" />
+    <ProjectReference Include="..\Message.Domain\Message.Domain.csproj" />
+    <ProjectReference Include="..\Message.Infrastructure\Message.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
