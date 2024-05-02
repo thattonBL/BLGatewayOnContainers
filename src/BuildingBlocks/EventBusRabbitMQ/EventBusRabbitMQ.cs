@@ -7,13 +7,9 @@ using Polly.Retry;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using RabbitMQ.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using EventBus;
 using Polly;
 
@@ -21,7 +17,7 @@ namespace EventBusRabbitMQ;
 
 public class EventBusRabbitMQ: IEventBus, IDisposable
 {
-    const string BROKER_NAME = "eshop_event_bus";
+    const string BROKER_NAME = "gateway_exchange";
 
     private static readonly JsonSerializerOptions s_indentedOptions = new() { WriteIndented = true };
     private static readonly JsonSerializerOptions s_caseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
@@ -89,6 +85,9 @@ public class EventBusRabbitMQ: IEventBus, IDisposable
         _logger.LogTrace("Declaring RabbitMQ exchange to publish event: {EventId}", @event.Id);
 
         channel.ExchangeDeclare(exchange: BROKER_NAME, type: "direct");
+
+        //this wasn't in the original source but RabbitMQ seems to need it for the message to publish
+        channel.QueueBind(_queueName, BROKER_NAME, eventName, null);
 
         var body = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), s_indentedOptions);
 

@@ -22,20 +22,20 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
         _logger = logger ?? throw new ArgumentException(nameof(ILogger));
     }
 
+    //Acts as a generic wrapper around the command handler "Handle" methods and defines how the db transaction to the MessageContext is managed
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         var response = default(TResponse);
         var typeName = request.GetGenericTypeName();
-
         try
         {
+            //Causes execution to wait until database is ready for a new transaction to take place
             if (_dbContext.HasActiveTransaction)
             {
                 return await next();
             }
-
             var strategy = _dbContext.Database.CreateExecutionStrategy();
-
+            //I am guessing this is kind of like an SQL transaction in C# with EF Core and defines how any database commit to Message Context occurs
             await strategy.ExecuteAsync(async () =>
             {
                 Guid transactionId;
@@ -53,7 +53,7 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
 
                     transactionId = transaction.TransactionId;
                 }
-
+                //finally we dispatch the integration events safe inthe knowledge the changes are committed to the database
                 await _messageIntegrationEventService.PublishEventsThroughEventBusAsync(transactionId);
             });
 

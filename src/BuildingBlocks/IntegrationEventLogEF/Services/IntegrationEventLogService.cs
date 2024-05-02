@@ -32,8 +32,7 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
 
         if (result.Any())
         {
-            return result.OrderBy(o => o.CreationTime)
-                .Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)));
+            return result.OrderBy(o => o.CreationTime).Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)));
         }
 
         return new List<IntegrationEventLogEntry>();

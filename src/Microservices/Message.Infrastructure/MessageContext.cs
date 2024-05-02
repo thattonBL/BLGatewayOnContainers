@@ -2,28 +2,29 @@
 using Message.Domain.MessageAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System;
 using System.Data;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Design;
+using Message.Infrastructure.EntityConfigurations;
 
 namespace Message.Infrastructure;
 
 public class MessageContext : DbContext, IUnitOfWork
 {
+
+    public const string DEFAULT_SCHEMA = "dbo";
     public virtual DbSet<Common> Commons { get; set; }
     public virtual DbSet<messageTypeLookup> messageTypeLookups { get; set; }
     public virtual DbSet<REA> REAs { get; set; }
     public virtual DbSet<REC> RECs { get; set; }
     public virtual DbSet<RIR> RIRs { get; set; }
-    public virtual DbSet<RSI> RSIs { get; set; }
+    public virtual DbSet<RsiMessage> RSIs { get; set; }
     public virtual DbSet<Queue> Queues { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.ApplyConfiguration(new RsiMessageEntityTypeConfiguration());
+        
         modelBuilder.Entity<Queue>()
             .HasKey(e => e.id);
         
@@ -121,82 +122,6 @@ public class MessageContext : DbContext, IUnitOfWork
 
         modelBuilder.Entity<RIR>()
             .Property(e => e.reason)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.collection_code)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.shelfmark)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.volume_number)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.storage_location_code)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.author)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.title)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.article_line1)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.article_line2)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.catalogue_record_url)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.further_details_url)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.dt_required)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.route)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.reading_room_staff_area)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.seat_number)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.reading_category)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.identifier)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.reader_name)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.operator_information)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<RSI>()
-            .Property(e => e.item_identity)
             .IsUnicode(false);
     }
 

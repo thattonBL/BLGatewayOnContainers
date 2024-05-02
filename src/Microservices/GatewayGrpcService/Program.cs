@@ -1,5 +1,9 @@
+using EventBus.Abstractions;
+using GatewayGrpcService.IntegrationEvents.EventHandling;
+using GatewayGrpcService.IntegrationEvents.Events;
 using GatewayGrpcService.Queries;
 using GatewayGrpcService.Services;
+using Services.Common;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace GatewayGrpcService
@@ -9,6 +13,8 @@ namespace GatewayGrpcService
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            //Adds the event Bus / RabbitMQ
+            builder.AddServiceDefaults();
 
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -36,6 +42,8 @@ namespace GatewayGrpcService
                 options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
 
+            builder.Services.AddTransient<NewRsiMessageSubmittedIntegrationEventHandler>();
+
             var app = builder.Build();
 
             app.Use((context, next) =>
@@ -59,6 +67,9 @@ namespace GatewayGrpcService
             app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
             app.MapSwagger();
             app.MapGrpcReflectionService();
+
+            var eventBus = app.Services.GetRequiredService<IEventBus>();
+            eventBus.Subscribe<NewRsiMessageSubmittedIntegrationEvent, NewRsiMessageSubmittedIntegrationEventHandler>();
 
             app.Run();
         }

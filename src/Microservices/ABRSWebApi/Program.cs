@@ -10,6 +10,7 @@ using ABRSWebApi.Application.IntegrationEvents;
 using Services.Common;
 using IntegrationEventLogEF.Services;
 using System.Data.Common;
+using Message.Infrastructure.Repositories;
 
 namespace ABRSWebApi
 {
@@ -29,8 +30,18 @@ namespace ABRSWebApi
             //Adds the Event Bus required for integration events
             builder.AddServiceDefaults();
 
-            builder.Services.AddDbContext<MessageContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            // Add services to the container.
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+            var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+            var dbPassword = Environment.GetEnvironmentVariable("DB_SA_PASSWORD");
+
+            if (connectionString != null)
+            {
+                connectionString = connectionString.Replace("{#host}", dbHost).Replace("{#dbName}", dbName).Replace("{#dbPassword}", dbPassword);
+            }
+
+            builder.Services.AddDbContext<MessageContext>(options => options.UseSqlServer(connectionString));
 
             builder.Services.AddTransient<Func<DbConnection, IIntegrationEventLogService>>(sp => (DbConnection c) => new IntegrationEventLogService(c));
 
@@ -47,8 +58,7 @@ namespace ABRSWebApi
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
             
-            
-
+            services.AddScoped<IMessageRepository, MessageRepository>();
 
             var app = builder.Build();
 

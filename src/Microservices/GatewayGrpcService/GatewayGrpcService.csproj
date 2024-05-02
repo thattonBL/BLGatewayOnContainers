@@ -42,4 +42,8 @@
     <Folder Include="google\api\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\Services.Common\Services.Common.csproj" />
+  </ItemGroup>
+
 </Project>

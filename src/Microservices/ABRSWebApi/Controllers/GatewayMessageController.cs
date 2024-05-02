@@ -22,10 +22,10 @@ namespace ABRSWebApi.Controllers
         // POST api/<GatewayMessageController>
         [Route("rsi")]       
         [HttpPost]
-        public async Task<ActionResult<RsiMessageDTO>> CreateRsiMessageFromInput([FromBody] CreateRsiMessageCommand createRsiMessageCommand)
+        public async Task<ActionResult<bool>> CreateRsiMessageFromInput([FromBody] AddNewRsiMessageCommand addRsiMessageCommand)
         {
             //TODO: Add logging
-            return await _mediator.Send(createRsiMessageCommand);
+            return await _mediator.Send(addRsiMessageCommand);
         }
     }
 }

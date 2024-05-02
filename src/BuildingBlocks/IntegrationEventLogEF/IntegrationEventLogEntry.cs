@@ -1,13 +1,4 @@
-﻿using EventBus.Events;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-
-namespace IntegrationEventLogEF;
+﻿namespace IntegrationEventLogEF;
 
 public class IntegrationEventLogEntry
 {

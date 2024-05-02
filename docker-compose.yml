@@ -41,6 +41,14 @@ services:
       command: bash -c '/opt/mssql-tools/bin/sqlcmd -S gateway-db -U sa -P password@12345# -i /docker-entrypoint-initdb.d/init.sql; echo "------------------------------ALLLL DONNNNNNEEEEEE!!!!---------------------------------";'
       networks:
          - gatewaynetwork
+  gatewayrabbitmq:
+    image: rabbitmq:3.13.1-management
+    container_name: gateway-rabbitmq
+    ports:
+        - "15672:15672"
+        - "5672:5672"
+    networks:
+        - gatewaynetwork
   abrswebapi:
         container_name: abrs-web-api
         image: ${DOCKER_REGISTRY-}abrswebapi
@@ -49,6 +57,7 @@ services:
             dockerfile: src/Microservices/ABRSWebApi/Dockerfile
         depends_on:
           - gatewaydb
+          - gatewayrabbitmq
         environment:
           - DB_HOST=gateway-db
           - DB_NAME=Gateway
@@ -63,6 +72,7 @@ services:
           dockerfile: src/Microservices/GatewayGrpcService/Dockerfile
       depends_on:
             - gatewaydb
+            - gatewayrabbitmq
       environment:
             - DB_HOST=gateway-db
             - DB_NAME=Gateway
