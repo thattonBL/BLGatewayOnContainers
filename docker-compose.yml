@@ -41,6 +41,35 @@ services:
       command: bash -c '/opt/mssql-tools/bin/sqlcmd -S gateway-db -U sa -P password@12345# -i /docker-entrypoint-initdb.d/init.sql; echo "------------------------------ALLLL DONNNNNNEEEEEE!!!!---------------------------------";'
       networks:
          - gatewaynetwork
+  elasticsrch01:
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.17.20
+      container_name: gateway-elasticsearch
+      environment:
+        - node.name=elasticsrch01
+        - cluster.name=es-docker-cluster
+        - cluster.initial_master_nodes=elasticsrch01
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      ulimits:
+        memlock:
+            soft: -1
+            hard: -1
+      volumes:
+        - ./elasticsrchdata01:/usr/share/elasticsearch/data
+      ports:
+        - "9200:9200"
+      networks:
+        - gatewaynetwork
+  kibana:
+      image: docker.elastic.co/kibana/kibana:7.17.20
+      container_name: gateway-kibana
+      environment:
+          - ELASTICSEARCH_URL=http://elasticsrch01:9200
+          - ELASTICSEARCH_HOSTS=http://elasticsrch01:9200
+      ports:
+          - "5601:5601"
+      networks:
+          - gatewaynetwork
   gatewayrabbitmq:
     image: rabbitmq:3.13.1-management
     container_name: gateway-rabbitmq
@@ -49,12 +78,12 @@ services:
         - "5672:5672"
     networks:
         - gatewaynetwork
-  abrswebapi:
-        container_name: abrs-web-api
-        image: ${DOCKER_REGISTRY-}abrswebapi
+  gatewayrequestapi:
+        container_name: gateway-req-api
+        image: ${DOCKER_REGISTRY-}gatewayrequestapi
         build:
             context: .
-            dockerfile: src/Microservices/ABRSWebApi/Dockerfile
+            dockerfile: src/Microservices/GatewayRequestApi/Dockerfile
         depends_on:
           - gatewaydb
           - gatewayrabbitmq
@@ -62,6 +91,7 @@ services:
           - DB_HOST=gateway-db
           - DB_NAME=Gateway
           - DB_SA_PASSWORD=password@12345#
+          - MSG_HOST=gateway-rabbitmq
         networks:
           - gatewaynetwork 
   gatewaygrpcservice:
@@ -71,11 +101,20 @@ services:
           context: .
           dockerfile: src/Microservices/GatewayGrpcService/Dockerfile
       depends_on:
-            - gatewaydb
             - gatewayrabbitmq
       environment:
-            - DB_HOST=gateway-db
-            - DB_NAME=Gateway
-            - DB_SA_PASSWORD=password@12345#
+            - MSG_HOST=gateway-rabbitmq
       networks:
             - gatewaynetwork
+  globalintegrationapi:
+      container_name: global-integration-api
+      image: ${DOCKER_REGISTRY-}globalintegrationapi
+      build:
+         context: .
+         dockerfile: src/Microservices/GlobalIntegrationApi/Dockerfile
+      depends_on:
+         - gatewayrabbitmq
+      environment:
+         - MSG_HOST=gateway-rabbitmq
+      networks:
+         - gatewaynetwork  

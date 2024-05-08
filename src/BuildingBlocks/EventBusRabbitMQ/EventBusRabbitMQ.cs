@@ -30,14 +30,18 @@ public class EventBusRabbitMQ: IEventBus, IDisposable
 
     private IModel _consumerChannel;
     private string _queueName;
+    private string _globalIntegrationQueueName;
+    private string _globalIntegrationRoutingKey;
 
     public EventBusRabbitMQ(IDefaultRabbitMQPersistentConnection persistentConnection, ILogger<EventBusRabbitMQ> logger,
-        IServiceProvider serviceProvider, IEventBusSubscriptionsManager subsManager, string queueName = null, int retryCount = 5)
+        IServiceProvider serviceProvider, IEventBusSubscriptionsManager subsManager, string queueName = null, string globalIntegrationRoutingKey = null, string globalIntegrationQueueName = null, int retryCount = 5)
     {
         _persistentConnection = persistentConnection ?? throw new ArgumentNullException(nameof(persistentConnection));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _subsManager = subsManager ?? new InMemoryEventBusSubscriptionsManager();
         _queueName = queueName;
+        _globalIntegrationQueueName = globalIntegrationQueueName;
+        _globalIntegrationRoutingKey = globalIntegrationRoutingKey;
         _consumerChannel = CreateConsumerChannel();
         _serviceProvider = serviceProvider;
         _retryCount = retryCount;
@@ -77,17 +81,23 @@ public class EventBusRabbitMQ: IEventBus, IDisposable
                 _logger.LogWarning(ex, "Could not publish event: {EventId} after {Timeout}s", @event.Id, $"{time.TotalSeconds:n1}");
             });
 
-        var eventName = @event.GetType().Name;
+        string eventName = @event.GetType().GetProperty("EventName").GetValue(@event, null).ToString();
 
         _logger.LogTrace("Creating RabbitMQ channel to publish event: {EventId} ({EventName})", @event.Id, eventName);
 
         using var channel = _persistentConnection.CreateModel();
         _logger.LogTrace("Declaring RabbitMQ exchange to publish event: {EventId}", @event.Id);
 
-        channel.ExchangeDeclare(exchange: BROKER_NAME, type: "direct");
+        channel.ExchangeDeclare(exchange: BROKER_NAME, type: ExchangeType.Topic);
 
         //this wasn't in the original source but RabbitMQ seems to need it for the message to publish
         channel.QueueBind(_queueName, BROKER_NAME, eventName, null);
+        
+        //bind the global integration evt
+        if(!String.IsNullOrEmpty(_globalIntegrationRoutingKey) && !String.IsNullOrEmpty(_globalIntegrationQueueName))
+        {
+            channel.QueueBind(_globalIntegrationQueueName, BROKER_NAME, _globalIntegrationRoutingKey, null);
+        }
 
         var body = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), s_indentedOptions);
 
@@ -117,16 +127,16 @@ public class EventBusRabbitMQ: IEventBus, IDisposable
         StartBasicConsume();
     }
 
-    public void Subscribe<T, TH>()
+    public void Subscribe<T, TH>(string customRoutingKey = "")
         where T : IntegrationEvent
         where TH : IIntegrationEventHandler<T>
     {
-        var eventName = _subsManager.GetEventKey<T>();
+        var eventName = String.IsNullOrEmpty(customRoutingKey) ? _subsManager.GetEventKey<T>() : customRoutingKey;
         DoInternalSubscription(eventName);
 
         _logger.LogInformation("Subscribing to event {EventName} with {EventHandler}", eventName, typeof(TH).GetGenericTypeName());
 
-        _subsManager.AddSubscription<T, TH>();
+        _subsManager.AddSubscription<T, TH>(customRoutingKey);
         StartBasicConsume();
     }
 
@@ -146,11 +156,11 @@ public class EventBusRabbitMQ: IEventBus, IDisposable
         }
     }
 
-    public void Unsubscribe<T, TH>()
+    public void Unsubscribe<T, TH>(string customRoutingKey = "")
         where T : IntegrationEvent
         where TH : IIntegrationEventHandler<T>
     {
-        var eventName = _subsManager.GetEventKey<T>();
+        var eventName = String.IsNullOrEmpty(customRoutingKey) ? _subsManager.GetEventKey<T>() : customRoutingKey;
 
         _logger.LogInformation("Unsubscribing from event {EventName}", eventName);
 
@@ -231,9 +241,15 @@ public class EventBusRabbitMQ: IEventBus, IDisposable
         var channel = _persistentConnection.CreateModel();
 
         channel.ExchangeDeclare(exchange: BROKER_NAME,
-                                type: "direct");
+                                type: ExchangeType.Topic);
 
         channel.QueueDeclare(queue: _queueName,
+                                durable: true,
+                                exclusive: false,
+                                autoDelete: false,
+                                arguments: null); 
+        
+        channel.QueueDeclare(queue: _globalIntegrationQueueName,
                                 durable: true,
                                 exclusive: false,
                                 autoDelete: false,

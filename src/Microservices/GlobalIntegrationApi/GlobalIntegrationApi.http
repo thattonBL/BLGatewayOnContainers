@@ -1,0 +1,6 @@
+@GlobalIntegrationApi_HostAddress = http://localhost:5159
+
+GET {{GlobalIntegrationApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

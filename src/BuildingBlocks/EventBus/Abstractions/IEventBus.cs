@@ -11,11 +11,11 @@ public interface IEventBus
 {
     void Publish(IntegrationEvent @event);
 
-    void Subscribe<T, TH>()
+    void Subscribe<T, TH>(string customRoutingKey = "")
         where T : IntegrationEvent
         where TH : IIntegrationEventHandler<T>;
 
-    void Unsubscribe<T, TH>()
+    void Unsubscribe<T, TH>(string customRoutingKey = "")
         where TH : IIntegrationEventHandler<T>
         where T : IntegrationEvent;
 }

@@ -30,11 +30,11 @@ public partial class InMemoryEventBusSubscriptionsManager : IEventBusSubscriptio
         DoAddSubscription(typeof(TH), eventName, isDynamic: true);
     }
 
-    public void AddSubscription<T, TH>()
+    public void AddSubscription<T, TH>(string customRoutingKey = "")
         where T : IntegrationEvent
         where TH : IIntegrationEventHandler<T>
     {
-        var eventName = GetEventKey<T>();
+        var eventName = String.IsNullOrEmpty(customRoutingKey) ? GetEventKey<T>() : customRoutingKey;
 
         DoAddSubscription(typeof(TH), eventName, isDynamic: false);
 
@@ -76,12 +76,12 @@ public partial class InMemoryEventBusSubscriptionsManager : IEventBusSubscriptio
     }
 
 
-    public void RemoveSubscription<T, TH>()
+    public void RemoveSubscription<T, TH>(string customRoutingKey = "")
         where TH : IIntegrationEventHandler<T>
         where T : IntegrationEvent
     {
-        var handlerToRemove = FindSubscriptionToRemove<T, TH>();
-        var eventName = GetEventKey<T>();
+        var handlerToRemove = FindSubscriptionToRemove<T, TH>(customRoutingKey);
+        var eventName = String.IsNullOrEmpty(customRoutingKey) ? GetEventKey<T>() : customRoutingKey;
         DoRemoveHandler(eventName, handlerToRemove);
     }
 
@@ -105,9 +105,9 @@ public partial class InMemoryEventBusSubscriptionsManager : IEventBusSubscriptio
         }
     }
 
-    public IEnumerable<SubscriptionInfo> GetHandlersForEvent<T>() where T : IntegrationEvent
+    public IEnumerable<SubscriptionInfo> GetHandlersForEvent<T>(string customEventName = "") where T : IntegrationEvent
     {
-        var key = GetEventKey<T>();
+        var key = String.IsNullOrEmpty(customEventName) ? GetEventKey<T>() : customEventName;
         return GetHandlersForEvent(key);
     }
     public IEnumerable<SubscriptionInfo> GetHandlersForEvent(string eventName) => _handlers[eventName];
@@ -126,11 +126,11 @@ public partial class InMemoryEventBusSubscriptionsManager : IEventBusSubscriptio
     }
 
 
-    private SubscriptionInfo FindSubscriptionToRemove<T, TH>()
+    private SubscriptionInfo FindSubscriptionToRemove<T, TH>(string customEventName = "")
             where T : IntegrationEvent
             where TH : IIntegrationEventHandler<T>
     {
-        var eventName = GetEventKey<T>();
+        var eventName = String.IsNullOrEmpty(customEventName) ? GetEventKey<T>() : customEventName;
         return DoFindSubscriptionToRemove(eventName, typeof(TH));
     }
 
@@ -145,14 +145,17 @@ public partial class InMemoryEventBusSubscriptionsManager : IEventBusSubscriptio
 
     }
 
-    public bool HasSubscriptionsForEvent<T>() where T : IntegrationEvent
+    public bool HasSubscriptionsForEvent<T>(string customEventName = "") where T : IntegrationEvent
     {
-        var key = GetEventKey<T>();
+        var key = String.IsNullOrEmpty(customEventName) ? GetEventKey<T>() : customEventName;
         return HasSubscriptionsForEvent(key);
     }
-    public bool HasSubscriptionsForEvent(string eventName) => _handlers.ContainsKey(eventName);
+    public bool HasSubscriptionsForEvent(string eventName)
+    {
+        return _handlers.ContainsKey(eventName);
+    } 
 
-    public Type GetEventTypeByName(string eventName) => _eventTypes.SingleOrDefault(t => t.Name == eventName);
+    public Type GetEventTypeByName(string eventName) => _eventTypes.SingleOrDefault(t => t.Name == eventName.Replace(".",""));
 
     public string GetEventKey<T>()
     {

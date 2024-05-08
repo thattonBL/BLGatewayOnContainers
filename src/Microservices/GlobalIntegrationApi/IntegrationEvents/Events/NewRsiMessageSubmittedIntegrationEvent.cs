@@ -1,12 +1,12 @@
 ﻿using EventBus.Events;
 using System.Text.Json.Serialization;
 
-namespace GatewayGrpcService.IntegrationEvents.Events;
+namespace GlobalIntegrationApi.IntegrationEvents.Events;
 
 public record NewRsiMessageSubmittedIntegrationEvent : IntegrationEvent
-{ 
-
+{
     public static string EVENT_NAME = "NewRsiMessageSubmitted.IntegrationEvent";
+
     public NewRsiMessageSubmittedIntegrationEvent(string rsiMessageId, string eventName)
     {
         RsiMessageId = rsiMessageId;

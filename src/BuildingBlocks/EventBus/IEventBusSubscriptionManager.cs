@@ -16,21 +16,21 @@ public interface IEventBusSubscriptionsManager
     void AddDynamicSubscription<TH>(string eventName)
         where TH : IDynamicIntegrationEventHandler;
 
-    void AddSubscription<T, TH>()
+    void AddSubscription<T, TH>(string customRoutingKey = "")
         where T : IntegrationEvent
         where TH : IIntegrationEventHandler<T>;
 
-    void RemoveSubscription<T, TH>()
+    void RemoveSubscription<T, TH>(string customRoutingKey = "")
             where TH : IIntegrationEventHandler<T>
             where T : IntegrationEvent;
     void RemoveDynamicSubscription<TH>(string eventName)
         where TH : IDynamicIntegrationEventHandler;
 
-    bool HasSubscriptionsForEvent<T>() where T : IntegrationEvent;
+    bool HasSubscriptionsForEvent<T>(string customEventName = "") where T : IntegrationEvent;
     bool HasSubscriptionsForEvent(string eventName);
     Type GetEventTypeByName(string eventName);
     void Clear();
-    IEnumerable<SubscriptionInfo> GetHandlersForEvent<T>() where T : IntegrationEvent;
+    IEnumerable<SubscriptionInfo> GetHandlersForEvent<T>(string customEventName = "") where T : IntegrationEvent;
     IEnumerable<SubscriptionInfo> GetHandlersForEvent(string eventName);
     string GetEventKey<T>();
 }

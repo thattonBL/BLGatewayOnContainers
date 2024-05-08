@@ -72,6 +72,9 @@ public static class CommonExtensions
             return services;
         }
 
+        var evtBusHost = String.IsNullOrEmpty(Environment.GetEnvironmentVariable("MSG_HOST")) ? 
+                                        eventBusSection["HostName"] : Environment.GetEnvironmentVariable("MSG_HOST");
+
         if (string.Equals(eventBusSection["ProviderName"], "ServiceBus", StringComparison.OrdinalIgnoreCase))
         {
             //services.AddSingleton<IServiceBusPersisterConnection>(sp =>
@@ -100,7 +103,7 @@ public static class CommonExtensions
 
                 var factory = new ConnectionFactory()
                 {
-                    HostName = configuration["EventBus:HostName"],
+                    HostName = evtBusHost,
                     DispatchConsumersAsync = true
                 };
 
@@ -121,13 +124,15 @@ public static class CommonExtensions
 
             services.AddSingleton<IEventBus, EventBusRabbitMQ.EventBusRabbitMQ>(sp =>
             {
-                var subscriptionClientName = eventBusSection["SubscriptionClientName"];
+                var subscriptionClientName = eventBusSection.GetRequiredValue("SubscriptionClientName");
                 var rabbitMQPersistentConnection = sp.GetRequiredService<IDefaultRabbitMQPersistentConnection>();
                 var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ.EventBusRabbitMQ>>();
                 var eventBusSubscriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
                 var retryCount = eventBusSection.GetValue("RetryCount", 5);
+                var globalIntegrationQueueName = eventBusSection.GetValue("GlobalIntegrationQueueName", String.Empty);
+                var globalIntegrationRoutingKey = eventBusSection.GetValue("GlobalIntegrationRoutingKey", String.Empty);
 
-                return new EventBusRabbitMQ.EventBusRabbitMQ(rabbitMQPersistentConnection, logger, sp, eventBusSubscriptionsManager, subscriptionClientName, retryCount);
+                return new EventBusRabbitMQ.EventBusRabbitMQ(rabbitMQPersistentConnection, logger, sp, eventBusSubscriptionsManager, subscriptionClientName, globalIntegrationRoutingKey, globalIntegrationQueueName, retryCount);
             });
         }
 

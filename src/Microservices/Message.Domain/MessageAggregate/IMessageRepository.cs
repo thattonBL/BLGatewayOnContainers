@@ -7,5 +7,7 @@ namespace Message.Infrastructure.Repositories
         IUnitOfWork UnitOfWork { get; }
 
         RsiMessage Add(RsiMessage message);
+
+        ReaMessage Add(ReaMessage message);
     }
 }

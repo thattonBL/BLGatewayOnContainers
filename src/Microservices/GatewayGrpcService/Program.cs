@@ -69,7 +69,7 @@ namespace GatewayGrpcService
             app.MapGrpcReflectionService();
 
             var eventBus = app.Services.GetRequiredService<IEventBus>();
-            eventBus.Subscribe<NewRsiMessageSubmittedIntegrationEvent, NewRsiMessageSubmittedIntegrationEventHandler>();
+            eventBus.Subscribe<NewRsiMessageSubmittedIntegrationEvent, NewRsiMessageSubmittedIntegrationEventHandler>(NewRsiMessageSubmittedIntegrationEvent.EVENT_NAME);
 
             app.Run();
         }

@@ -14,7 +14,7 @@ public class MessageContext : DbContext, IUnitOfWork
     public const string DEFAULT_SCHEMA = "dbo";
     public virtual DbSet<Common> Commons { get; set; }
     public virtual DbSet<messageTypeLookup> messageTypeLookups { get; set; }
-    public virtual DbSet<REA> REAs { get; set; }
+    public virtual DbSet<ReaMessage> REAs { get; set; }
     public virtual DbSet<REC> RECs { get; set; }
     public virtual DbSet<RIR> RIRs { get; set; }
     public virtual DbSet<RsiMessage> RSIs { get; set; }
@@ -24,6 +24,7 @@ public class MessageContext : DbContext, IUnitOfWork
     {
 
         modelBuilder.ApplyConfiguration(new RsiMessageEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ReaMessageEntityTypeConfiguration());
         
         modelBuilder.Entity<Queue>()
             .HasKey(e => e.id);
@@ -67,30 +68,6 @@ public class MessageContext : DbContext, IUnitOfWork
             .HasMany(e => e.Queues)
             .WithOne(e => e.messageTypeLookup)
             .HasForeignKey(e => e.type);
-
-        modelBuilder.Entity<REA>()
-            .Property(e => e.dt_of_action)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<REA>()
-            .Property(e => e.request_response_flag)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<REA>()
-            .Property(e => e.failure_code)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<REA>()
-            .Property(e => e.text_message)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<REA>()
-            .Property(e => e.stack_identity)
-            .IsUnicode(false);
-
-        modelBuilder.Entity<REA>()
-            .Property(e => e.tray_identity)
-            .IsUnicode(false);
 
         modelBuilder.Entity<REC>()
             .Property(e => e.dt_of_action)
