@@ -1,7 +1,10 @@
 using EventBus.Abstractions;
 using GlobalIntegrationApi.IntegrationEvents.EventHandling;
 using GlobalIntegrationApi.IntegrationEvents.Events;
+using IntegrationEventLogEF.Services;
+using Microsoft.EntityFrameworkCore;
 using Services.Common;
+using System.Data.Common;
 
 namespace GlobalIntegrationApi
 {
@@ -20,6 +23,20 @@ namespace GlobalIntegrationApi
 
             //Adds the Event Bus required for integration events
             builder.AddServiceDefaults();
+
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+            var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+            var dbPassword = Environment.GetEnvironmentVariable("DB_SA_PASSWORD");
+
+            if (connectionString != null)
+            {
+                connectionString = connectionString.Replace("{#host}", dbHost).Replace("{#dbName}", dbName).Replace("{#dbPassword}", dbPassword);
+            }
+
+            builder.Services.AddDbContext<GlobalIntegrationContext>(options => options.UseSqlServer(connectionString));
+
+            builder.Services.AddTransient<Func<DbConnection, IIntegrationEventLogService>>(sp => (DbConnection c) => new IntegrationEventLogService(c));
 
             builder.Services.AddTransient<NewRsiMessageSubmittedIntegrationEventHandler>();
 

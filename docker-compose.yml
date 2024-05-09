@@ -106,6 +106,38 @@ services:
             - MSG_HOST=gateway-rabbitmq
       networks:
             - gatewaynetwork
+  globalintegrationdb:
+    container_name: global-integration-db
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    stdin_open: true
+    ports:
+        - "1533:1433"
+    environment:
+        - ACCEPT_EULA=Y
+        - SA_PASSWORD=password@12345#
+    restart: always
+    networks:
+        - gatewaynetwork
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P password@12345# -Q 'SELECT 1' || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    volumes:
+         - ./globalintegrationdb_data:/docker-entrypoint-initdb.d
+  globalintegrationdb.conficurator:
+      image: mcr.microsoft.com/mssql-tools:latest
+      container_name: global-integration-db-configurator
+      user: root
+      volumes:
+         - ./globalintegrationdb_data:/docker-entrypoint-initdb.d
+      depends_on:
+         globalintegrationdb:
+           condition: service_healthy
+      command: bash -c '/opt/mssql-tools/bin/sqlcmd -S global-integration-db -U sa -P password@12345# -i /docker-entrypoint-initdb.d/init.sql; echo "------------------------------ALLLL GLOOOOOBAAAAAAL!!!!---------------------------------";'
+      networks:
+         - gatewaynetwork
   globalintegrationapi:
       container_name: global-integration-api
       image: ${DOCKER_REGISTRY-}globalintegrationapi
@@ -114,7 +146,11 @@ services:
          dockerfile: src/Microservices/GlobalIntegrationApi/Dockerfile
       depends_on:
          - gatewayrabbitmq
+         - globalintegrationdb
       environment:
+         - DB_HOST=global-integration-db
+         - DB_NAME=Global_Integration
+         - DB_SA_PASSWORD=password@12345#
          - MSG_HOST=gateway-rabbitmq
       networks:
          - gatewaynetwork  

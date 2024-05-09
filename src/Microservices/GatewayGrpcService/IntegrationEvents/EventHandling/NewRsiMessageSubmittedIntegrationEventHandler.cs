@@ -16,7 +16,7 @@ namespace GatewayGrpcService.IntegrationEvents.EventHandling
         {
             _logger.LogDebug("New RSI message submitted: {RsiMessageId}", @event.RsiMessageId);
             Console.WriteLine($"New RSI message submitted: {@event.RsiMessageId}");
-            throw new System.NotImplementedException();
+            //throw new System.NotImplementedException();
         }
     }   
 }
