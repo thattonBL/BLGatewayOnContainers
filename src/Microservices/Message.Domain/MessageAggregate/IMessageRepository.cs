@@ -9,5 +9,7 @@ namespace Message.Infrastructure.Repositories
         RsiMessage Add(RsiMessage message);
 
         ReaMessage Add(ReaMessage message);
+
+        Common AddCommon(int RsiId);
     }
 }

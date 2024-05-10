@@ -39,6 +39,7 @@ namespace GlobalIntegrationApi
             builder.Services.AddTransient<Func<DbConnection, IIntegrationEventLogService>>(sp => (DbConnection c) => new IntegrationEventLogService(c));
 
             builder.Services.AddTransient<NewRsiMessageSubmittedIntegrationEventHandler>();
+            builder.Services.AddTransient<NewRsiMessageRecievedIntegrationEventHandler>();
 
             var app = builder.Build();
 
@@ -58,6 +59,7 @@ namespace GlobalIntegrationApi
 
             var eventBus = app.Services.GetRequiredService<IEventBus>();
             eventBus.Subscribe<NewRsiMessageSubmittedIntegrationEvent, NewRsiMessageSubmittedIntegrationEventHandler>(NewRsiMessageSubmittedIntegrationEvent.EVENT_NAME);
+            eventBus.Subscribe<NewRsiMessageRecievedIntegrationEvent, NewRsiMessageRecievedIntegrationEventHandler>(NewRsiMessageRecievedIntegrationEvent.EVENT_NAME);
 
             app.Run();
         }

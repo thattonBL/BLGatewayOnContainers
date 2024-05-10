@@ -29,5 +29,11 @@ namespace Message.Infrastructure.Repositories
             //need to add new Queue, Common and REA message not just RSI
             return _context.REAs.Add(message).Entity;
         }
+
+        public Common AddCommon(int RsiId)
+        {
+            var newCommon = new Common { dt_created = DateTime.Now, msg_target = RsiId, type = 1 };
+            return _context.Commons.Add(newCommon).Entity;
+        }
     }
 }

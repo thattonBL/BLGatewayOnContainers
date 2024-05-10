@@ -18,16 +18,13 @@ public class MessageContext : DbContext, IUnitOfWork
     public virtual DbSet<REC> RECs { get; set; }
     public virtual DbSet<RIR> RIRs { get; set; }
     public virtual DbSet<RsiMessage> RSIs { get; set; }
-    public virtual DbSet<Queue> Queues { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 
         modelBuilder.ApplyConfiguration(new RsiMessageEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ReaMessageEntityTypeConfiguration());
-        
-        modelBuilder.Entity<Queue>()
-            .HasKey(e => e.id);
+       
         
         modelBuilder.Entity<Common>()
             .Property(e => e.msg_status)
@@ -49,11 +46,6 @@ public class MessageContext : DbContext, IUnitOfWork
             .Property(e => e.ref_request_id)
             .IsUnicode(false);
 
-        modelBuilder.Entity<Common>()
-            .HasMany(e => e.Queues)
-            .WithOne(e => e.Common)
-            .HasForeignKey(e => e.msg_target);
-
         modelBuilder.Entity<messageTypeLookup>()
             .Property(e => e.type)
             .IsUnicode(false);
@@ -63,11 +55,6 @@ public class MessageContext : DbContext, IUnitOfWork
             .WithOne(e => e.messageTypeLookup)
             .HasForeignKey(e => e.type)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<messageTypeLookup>()
-            .HasMany(e => e.Queues)
-            .WithOne(e => e.messageTypeLookup)
-            .HasForeignKey(e => e.type);
 
         modelBuilder.Entity<REC>()
             .Property(e => e.dt_of_action)

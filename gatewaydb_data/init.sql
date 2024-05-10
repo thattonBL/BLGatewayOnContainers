@@ -72,18 +72,6 @@ BEGIN
   )
 END
 
-IF  NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Gateway].[dbo].[Queue]') AND type in (N'U'))
-BEGIN
-  CREATE TABLE Gateway.dbo.Queue (
-    id int IDENTITY,
-    msg_target int NULL,
-    prty int NULL,
-    type int NULL,
-    dt_created datetime NULL,
-    is_acknowledged bit NOT NULL
-  )
-END
-
 IF  NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Gateway].[dbo].[REA]') AND type in (N'U'))
 BEGIN
   CREATE TABLE Gateway.dbo.REA (
@@ -187,13 +175,6 @@ BEGIN
 END
 
 BEGIN
-  IF NOT EXISTS(SELECT top 1 1 FROM Gateway.dbo.Queue)
-  BEGIN   
-    INSERT INTO Gateway.dbo.Queue(msg_target, prty, type, dt_created, is_acknowledged) VALUES (1, 1, 1, '2024-03-12 00:00:00.000', CONVERT(bit, 'False'));
-  END
-END
-
-BEGIN
   IF NOT EXISTS(SELECT top 1 1 FROM Gateway.dbo.Common)
   BEGIN
     INSERT INTO Gateway.dbo.Common(msg_status, msg_source, msg_target, prty, type, ref_source, ref_request_id, ref_seq_no, dt_created) VALUES ('Processing', 'B33', 1, NULL, 1, NULL, NULL, NULL, '2024-03-13 00:00:00.000');
@@ -201,14 +182,6 @@ BEGIN
 END
 
 -- ADD FOREIGN KEYS --
-
-ALTER TABLE Gateway.dbo.Queue
-  ADD CONSTRAINT FK_Queue_Common_id FOREIGN KEY (msg_target) REFERENCES dbo.Common (id)
-GO
-
-ALTER TABLE Gateway.dbo.Queue
-  ADD CONSTRAINT FK_Queue_messageTypeLookup_id FOREIGN KEY (type) REFERENCES dbo.messageTypeLookup (id)
-GO
 
 ALTER TABLE Gateway.dbo.Common
   ADD CONSTRAINT FK_Common_messageTypeLookup_id FOREIGN KEY (type) REFERENCES dbo.messageTypeLookup (id)

@@ -6,17 +6,21 @@ namespace GatewayGrpcService.IntegrationEvents.EventHandling
     public class NewRsiMessageSubmittedIntegrationEventHandler : IIntegrationEventHandler<NewRsiMessageSubmittedIntegrationEvent>
     {
         private readonly ILogger<NewRsiMessageSubmittedIntegrationEventHandler> _logger;
+        private readonly IEventBus _eventBus;
         
-        public NewRsiMessageSubmittedIntegrationEventHandler(ILogger<NewRsiMessageSubmittedIntegrationEventHandler> logger)
+        public NewRsiMessageSubmittedIntegrationEventHandler(IEventBus eventBus, ILogger<NewRsiMessageSubmittedIntegrationEventHandler> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
         }
 
         public async Task Handle(NewRsiMessageSubmittedIntegrationEvent @event)
         {
-            _logger.LogDebug("New RSI message submitted: {RsiMessageId}", @event.RsiMessageId);
-            Console.WriteLine($"New RSI message submitted: {@event.RsiMessageId}");
-            //throw new System.NotImplementedException();
+            var newRsiMessageRecievedEvent = new NewRsiMessageRecievedIntegrationEvent(@event.RsiMessageId, NewRsiMessageRecievedIntegrationEvent.EVENT_NAME, "GatewayGrpcService");
+            // add event to Redis Cache maybe?
+            await Task.Run( () => _eventBus.Publish(newRsiMessageRecievedEvent));
+            Console.WriteLine("We've DOne it! We've sent the message to the Global Integration API!");
+
         }
     }   
 }
