@@ -43,6 +43,7 @@ namespace GatewayGrpcService
             });
 
             builder.Services.AddTransient<NewRsiMessageSubmittedIntegrationEventHandler>();
+            builder.Services.AddTransient<StopConsumerRequestIntegrationEventHandler>();
 
             var app = builder.Build();
 
@@ -70,6 +71,7 @@ namespace GatewayGrpcService
 
             var eventBus = app.Services.GetRequiredService<IEventBus>();
             eventBus.Subscribe<NewRsiMessageSubmittedIntegrationEvent, NewRsiMessageSubmittedIntegrationEventHandler>(NewRsiMessageSubmittedIntegrationEvent.EVENT_NAME);
+            eventBus.Subscribe<StopConsumerRequestIntegrationEvent, StopConsumerRequestIntegrationEventHandler>(StopConsumerRequestIntegrationEvent.EVENT_NAME);
 
             app.Run();
         }

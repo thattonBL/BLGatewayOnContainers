@@ -1,6 +1,7 @@
 using EventBus.Abstractions;
 using GlobalIntegrationApi.IntegrationEvents.EventHandling;
 using GlobalIntegrationApi.IntegrationEvents.Events;
+using GlobalIntegrationApi.Services;
 using IntegrationEventLogEF.Services;
 using Microsoft.EntityFrameworkCore;
 using Services.Common;
@@ -37,6 +38,8 @@ namespace GlobalIntegrationApi
             builder.Services.AddDbContext<GlobalIntegrationContext>(options => options.UseSqlServer(connectionString));
 
             builder.Services.AddTransient<Func<DbConnection, IIntegrationEventLogService>>(sp => (DbConnection c) => new IntegrationEventLogService(c));
+
+            builder.Services.AddTransient<IGlobalIntegrationServices, GlobalIntegrationServices>();
 
             builder.Services.AddTransient<NewRsiMessageSubmittedIntegrationEventHandler>();
             builder.Services.AddTransient<NewRsiMessageRecievedIntegrationEventHandler>();
