@@ -27,3 +27,18 @@ public record RSIMessage
     public string item_identity {  get; init; }
 }
 
+public record Common
+{
+    public int id { get; init; }
+    public string msg_status { get; init; }
+    public string msg_source { get; init; }
+    public int msg_target { get; init; }
+    public string prty { get; init; }
+    public int type { get; init; }
+    public string ref_source { get; init; }
+    public string ref_request_id { get; init; }
+    public string ref_seq_no { get; init; }
+    public DateTime dt_created { get; init; }
+    public bool is_acknowledged { get; init; }
+}
+

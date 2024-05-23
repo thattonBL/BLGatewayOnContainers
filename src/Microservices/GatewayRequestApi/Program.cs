@@ -66,8 +66,8 @@ namespace GatewayRequestApi
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }            
-
+            }
+            app.UseCors("AllowAll");
             app.UseHttpsRedirection();
             app.UseAuthorization();
 

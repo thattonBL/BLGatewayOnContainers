@@ -1,4 +1,5 @@
-﻿using GatewayRequestApi.Models;
+﻿using Events.Common;
+using GatewayRequestApi.Models;
 
 namespace GatewayRequestApi.Application.Commands;
 

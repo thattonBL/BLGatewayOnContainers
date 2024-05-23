@@ -17,4 +17,11 @@ public class GlobalIntegrationServices : IGlobalIntegrationServices
         await Task.Run(() => _eventBus.Publish(stopConsumerRequestIntegrationEvent));
         return true;
     }
+
+    public async Task<bool> RestartNamedCosumer(string consumerId)
+    {
+        var restartConsumerRequestIntegrationEvent = new RestartConsumerRequestIntegrationEvent(consumerId);
+        await Task.Run(() => _eventBus.Publish(restartConsumerRequestIntegrationEvent));
+        return true;
+    }
 }

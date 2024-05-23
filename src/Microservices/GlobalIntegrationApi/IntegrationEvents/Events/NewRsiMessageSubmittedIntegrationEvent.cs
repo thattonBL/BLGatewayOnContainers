@@ -1,19 +1,13 @@
-﻿using EventBus.Events;
-using System.Text.Json.Serialization;
+﻿using Events.Common;
+using Events.Common.Events;
 
 namespace GlobalIntegrationApi.IntegrationEvents.Events;
 
-public record NewRsiMessageSubmittedIntegrationEvent : IntegrationEvent
+public record NewRsiMessageSubmittedIntegrationEvent : BaseRsiMessageSubmittedIntegrationEvent
 {
-    public static string EVENT_NAME = "NewRsiMessageSubmitted.IntegrationEvent";
-
-    public NewRsiMessageSubmittedIntegrationEvent(string rsiMessageId, string eventName)
+    public NewRsiMessageSubmittedIntegrationEvent(RsiPostItem rsiMessage, string eventName)
+        : base(rsiMessage, eventName)
     {
-        RsiMessageId = rsiMessageId;
-        EventName = eventName;
+
     }
-
-    public string RsiMessageId { get; init; }
-
-    public string EventName { get; init; }
 }

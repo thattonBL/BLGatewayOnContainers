@@ -34,4 +34,18 @@ services:
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  building33mockapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development  
+      - Kestrel__Endpoints__HTTP__Url=http://0.0.0.0:8080
+      - Kestrel__Endpoints__GRPC__Url=http://0.0.0.0:8081
+      - Kestrel__Endpoints__GRPC__Protocols=Http2
+      - GRPC_PORT=8081
+      - PORT=8080
+    ports:
+      - "50937:8081"
+      - "50936:8080"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
     

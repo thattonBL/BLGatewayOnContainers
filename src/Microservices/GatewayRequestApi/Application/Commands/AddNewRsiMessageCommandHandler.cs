@@ -1,4 +1,5 @@
-﻿using GatewayRequestApi.Application.IntegrationEvents;
+﻿using Events.Common.Events;
+using GatewayRequestApi.Application.IntegrationEvents;
 using GatewayRequestApi.Application.IntegrationEvents.Events;
 using GatewayRequestApi.Models;
 using Message.Domain.MessageAggregate;
@@ -31,7 +32,7 @@ public class AddNewRsiMessageCommandHandler : IRequestHandler<AddNewRsiMessageCo
         var postedMsgData = request.Message;
 
         //Create a new integration message for the request and add it to the Integration Event table
-        var newRsiMessageIntEvent = new NewRsiMessageSubmittedIntegrationEvent(postedMsgData.Identifier, NewRsiMessageSubmittedIntegrationEvent.EVENT_NAME);
+        var newRsiMessageIntEvent = new NewRsiMessageSubmittedIntegrationEvent(postedMsgData, NewRsiMessageSubmittedIntegrationEvent.EVENT_NAME);
         await _messageIntegrationEventService.AddAndSaveEventAsync(newRsiMessageIntEvent);
         //We could use AutoFac for this but simpley copying properties across with some parsing
         var message = new RsiMessage(postedMsgData.CollectionCode,

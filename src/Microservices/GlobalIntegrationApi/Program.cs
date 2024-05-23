@@ -1,4 +1,5 @@
 using EventBus.Abstractions;
+using Events.Common.Events;
 using GlobalIntegrationApi.IntegrationEvents.EventHandling;
 using GlobalIntegrationApi.IntegrationEvents.Events;
 using GlobalIntegrationApi.Services;
@@ -52,6 +53,7 @@ namespace GlobalIntegrationApi
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            app.UseCors("AllowAll");
 
             app.UseHttpsRedirection();
 

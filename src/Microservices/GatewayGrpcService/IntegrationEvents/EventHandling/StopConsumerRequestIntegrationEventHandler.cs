@@ -1,23 +1,26 @@
 ﻿using EventBus.Abstractions;
 using GatewayGrpcService.IntegrationEvents.Events;
+using GatewayGrpcService.Services;
+using MediatR;
 
 namespace GatewayGrpcService.IntegrationEvents.EventHandling
 {
     public class StopConsumerRequestIntegrationEventHandler : IIntegrationEventHandler<StopConsumerRequestIntegrationEvent>
     {
         private readonly ILogger<StopConsumerRequestIntegrationEventHandler> _logger;
-        private readonly IEventBus _eventBus;
+        private readonly IMessageServiceControl _messageServiceControl;
         
-        public StopConsumerRequestIntegrationEventHandler(IEventBus eventBus, ILogger<StopConsumerRequestIntegrationEventHandler> logger)
+        public StopConsumerRequestIntegrationEventHandler(IMessageServiceControl messageServiceControl, ILogger<StopConsumerRequestIntegrationEventHandler> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+            _messageServiceControl = messageServiceControl;
         }
         public async Task Handle(StopConsumerRequestIntegrationEvent @event)
         {
             // add event to Redis Cache maybe?
             //dispatch a Domain Event that each Integration event picks up
-            Console.WriteLine("We've DOne it! We havr requested that the processing of messages stops immediately!");
+            _logger.LogInformation("StopConsumerRequestIntegrationEvent recieved stopping sending message from GatewayGrpcService");
+            _messageServiceControl.messageDeliveryPaused = true;
         }
     }
 }

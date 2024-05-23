@@ -4,16 +4,14 @@ option csharp_namespace = "GatewayGrpcService.Protos";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
-service GatewayGrpcService {
-  rpc GetGatewayMessages (RequestParams) returns (stream RSIMessage) {
-    option (google.api.http) = {
-      get: "/gateway"
-    };
-  }
+service GatewayGrpcMessagingService {
+	rpc CreateStorageItemRequest(RSIMessage) returns (RSIRecieved) {
+		option (google.api.http) = {
+			post: "/api/v1/StorageItem"
+			body: "*"
+		};
+	}
 }
-
-message RequestParams {}
-
 
 message RSIMessage {
     int32 id = 1;
@@ -41,4 +39,6 @@ message RSIMessage {
     string item_identity = 23;
 }
 
-
+message RSIRecieved {
+    string item_identity = 1;
+}

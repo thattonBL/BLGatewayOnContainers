@@ -164,7 +164,7 @@ public class EventBusRabbitMQ: IEventBus, IDisposable
 
         _logger.LogInformation("Unsubscribing from event {EventName}", eventName);
 
-        _subsManager.RemoveSubscription<T, TH>();
+        _subsManager.RemoveSubscription<T, TH>(eventName);
     }
 
     public void UnsubscribeDynamic<TH>(string eventName)

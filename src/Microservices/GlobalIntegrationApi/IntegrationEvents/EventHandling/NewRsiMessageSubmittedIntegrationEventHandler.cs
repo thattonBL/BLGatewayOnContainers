@@ -1,4 +1,5 @@
 ﻿using EventBus.Abstractions;
+using Events.Common.Events;
 using GlobalIntegrationApi.IntegrationEvents.Events;
 using IntegrationEventLogEF.Services;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ namespace GlobalIntegrationApi.IntegrationEvents.EventHandling
         public async Task Handle(NewRsiMessageSubmittedIntegrationEvent @event)
         {
             //TODO Agg try catch around this also what role does IMediator play in the Context????
-            Console.WriteLine($"New RSI GLOBAAAAALL !!!!!!!!  INtegration message submitted: {@event.RsiMessageId}");
+            Console.WriteLine($"New RSI GLOBAAAAALL !!!!!!!!  INtegration message submitted: {@event.RsiMessage.Identifier}");
             await using var transaction = await _globalIntContext.BeginTransactionAsync();
             {
                 //TODO could loop through backed up messages here if required???

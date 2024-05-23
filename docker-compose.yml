@@ -29,7 +29,7 @@ services:
       start_period: 10s
     volumes:
          - ./gatewaydb_data:/docker-entrypoint-initdb.d
-  gatewaydb.conficurator:
+  gatewaydb.configurator:
       image: mcr.microsoft.com/mssql-tools:latest
       container_name: gateway-db-configurator
       user: root
@@ -93,7 +93,39 @@ services:
           - DB_SA_PASSWORD=password@12345#
           - MSG_HOST=gateway-rabbitmq
         networks:
-          - gatewaynetwork 
+          - gatewaynetwork
+  gatewaygrpcdb:
+      container_name: gateway-grpc-db
+      image: mcr.microsoft.com/mssql/server:2019-latest
+      stdin_open: true
+      ports:
+         - "1434:1433"
+      environment:
+         - ACCEPT_EULA=Y
+         - SA_PASSWORD=password@12345#
+      restart: always
+      networks:
+         - gatewaynetwork
+      healthcheck:
+            test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P password@12345# -Q 'SELECT 1' || exit 1" ]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 10s
+      volumes:
+         - ./gatewaygrpcdb_data:/docker-entrypoint-initdb.d
+  gatewaygrpcdb.configurator:
+      image: mcr.microsoft.com/mssql-tools:latest
+      container_name: gateway-grpc-db-configurator
+      user: root
+      volumes:
+          - ./gatewaygrpcdb_data:/docker-entrypoint-initdb.d
+      depends_on:
+          gatewaygrpcdb:
+             condition: service_healthy
+      command: bash -c '/opt/mssql-tools/bin/sqlcmd -S gateway-grpc-db -U sa -P password@12345# -i /docker-entrypoint-initdb.d/init.sql; echo "--GRPC DATABASE CONFIGURED------";'
+      networks:
+         - gatewaynetwork
   gatewaygrpcservice:
       container_name: gateway-grpc-service
       image: ${DOCKER_REGISTRY-}gatewaygrpcservice
@@ -102,8 +134,21 @@ services:
           dockerfile: src/Microservices/GatewayGrpcService/Dockerfile
       depends_on:
             - gatewayrabbitmq
+            - gatewaygrpcdb
+            - building33mockapi
       environment:
+            - DB_HOST=gateway-grpc-db
+            - DB_NAME=Gateway
+            - DB_SA_PASSWORD=password@12345#
             - MSG_HOST=gateway-rabbitmq
+      networks:
+            - gatewaynetwork
+  building33mockapi:
+      container_name: building33-mock-api
+      image: ${DOCKER_REGISTRY-}building33mockapi
+      build:
+          context: .
+          dockerfile: src/Microservices/Building33MockApi/Dockerfile        
       networks:
             - gatewaynetwork
   globalintegrationdb:
@@ -126,7 +171,7 @@ services:
       start_period: 10s
     volumes:
          - ./globalintegrationdb_data:/docker-entrypoint-initdb.d
-  globalintegrationdb.conficurator:
+  globalintegrationdb.configurator:
       image: mcr.microsoft.com/mssql-tools:latest
       container_name: global-integration-db-configurator
       user: root
