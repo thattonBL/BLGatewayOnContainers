@@ -1,0 +1,6 @@
+@Building33MockApi_HostAddress = http://localhost:5196
+
+GET {{Building33MockApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

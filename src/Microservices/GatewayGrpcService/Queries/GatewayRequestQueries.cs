@@ -30,5 +30,24 @@ namespace GatewayGrpcService.Queries
                 return await connection.QueryAsync<RSIMessage>("dbo.spGetRsiMessages", commandType: CommandType.StoredProcedure);
             }     
         }
+
+        public async Task<IEnumerable<Common>> SetRsiMessagesToAckedAsync()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                if (connection.State == ConnectionState.Closed)
+                {
+                    try
+                    {
+                        connection.Open();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                }
+                return await connection.QueryAsync<Common>("dbo.spSetMessagesToAck", commandType: CommandType.StoredProcedure);
+            }
+        }
     }
 }

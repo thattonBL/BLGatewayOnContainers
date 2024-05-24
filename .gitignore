@@ -8,3 +8,5 @@ src/Microservices/ABRSWebApi/.vs
 src/Microservices/ABRSWebApi/bin
 src/Microservices/GatewayGrpcService/bin
 bin
+packages
+elasticsrchdata01/nodes
