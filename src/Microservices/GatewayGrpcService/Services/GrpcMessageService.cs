@@ -48,6 +48,7 @@ namespace GatewayGrpcService.Services
             request.OperatorInformation = rawMessageData.OperatorInformation;
             request.ItemIdentity = rawMessageData.ItemIdentity; 
             var response = await _gatewayMessagingClient.CreateStorageItemRequestAsync(request);
+            //Publish Mesaage Sent Integration Event
             return new RsiMessageRecievedDataModel
             {
                 ItemIdentity = response.ItemIdentity
@@ -85,6 +86,7 @@ namespace GatewayGrpcService.Services
                 responseMessage.ItemIdentity = message.item_identity;
 
                 var response = await _gatewayMessagingClient.CreateStorageItemRequestAsync(responseMessage);
+                //Publish Mesaage Sent Integration Event
                 responseList.Add(new RsiMessageRecievedDataModel
                 {
                     ItemIdentity = response.ItemIdentity
