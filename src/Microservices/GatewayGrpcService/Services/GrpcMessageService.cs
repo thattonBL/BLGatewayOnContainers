@@ -58,7 +58,21 @@ namespace GatewayGrpcService.Services
         public async Task<IEnumerable<RsiMessageRecievedDataModel>> SendBulkRsiMessages(IEnumerable<Queries.RSIMessage> messageData)
         {
             var responseList = new List<RsiMessageRecievedDataModel>();
-            foreach (var message in messageData)
+            await LoopAsync(messageData, responseList);
+            return responseList;
+        }
+
+        public Task AddToList(RsiMessageRecievedDataModel item, List<RsiMessageRecievedDataModel> responseList)
+        {
+            responseList.Add(item);
+            return Task.CompletedTask;
+        }
+
+        public async Task LoopAsync(IEnumerable<Queries.RSIMessage> sentMessages, List<RsiMessageRecievedDataModel> responseList)
+        {
+            List<Task> listOfTasks = new List<Task>();
+
+            foreach (var message in sentMessages)
             {
                 var responseMessage = new Protos.RSIMessage();
                 responseMessage.Id = message.id;
@@ -87,12 +101,10 @@ namespace GatewayGrpcService.Services
 
                 var response = await _gatewayMessagingClient.CreateStorageItemRequestAsync(responseMessage);
                 //Publish Mesaage Sent Integration Event
-                responseList.Add(new RsiMessageRecievedDataModel
-                {
-                    ItemIdentity = response.ItemIdentity
-                });
+                listOfTasks.Add(AddToList(new RsiMessageRecievedDataModel{ItemIdentity = response.ItemIdentity}, responseList));
             }
-            return responseList;
+
+            await Task.WhenAll(listOfTasks);
         }
     }
 }

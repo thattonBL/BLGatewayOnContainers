@@ -36,7 +36,10 @@ namespace GatewayGrpcService.IntegrationEvents.EventHandling
             if (!_messageServiceControl.messageDeliveryPaused)
             {
                 //if it isn't then send the message using the data from the event
-            await _grpcMessageService.SendSingleRsiMessage(@event.RsiMessage);
+                await _grpcMessageService.SendSingleRsiMessage(@event.RsiMessage);
+                // Let the global integration api know that the message ghas been published
+                var newRsiPublishedEvent = new RsiMessagePublishedIntegrationEvent(@event.RsiMessage.Identifier, RsiMessagePublishedIntegrationEvent.EVENT_NAME, "GatewayGrpcService");
+                await Task.Run(() => _eventBus.Publish(newRsiPublishedEvent));
             }
             else
             {

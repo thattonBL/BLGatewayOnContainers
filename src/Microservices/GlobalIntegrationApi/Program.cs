@@ -42,6 +42,7 @@ namespace GlobalIntegrationApi
 
             builder.Services.AddTransient<IGlobalIntegrationServices, GlobalIntegrationServices>();
 
+            builder.Services.AddTransient<RsiMessagePublishedIntegrationEventHandler>();
             builder.Services.AddTransient<NewRsiMessageSubmittedIntegrationEventHandler>();
             builder.Services.AddTransient<NewRsiMessageRecievedIntegrationEventHandler>();
 
@@ -65,6 +66,7 @@ namespace GlobalIntegrationApi
             var eventBus = app.Services.GetRequiredService<IEventBus>();
             eventBus.Subscribe<NewRsiMessageSubmittedIntegrationEvent, NewRsiMessageSubmittedIntegrationEventHandler>(NewRsiMessageSubmittedIntegrationEvent.EVENT_NAME);
             eventBus.Subscribe<NewRsiMessageRecievedIntegrationEvent, NewRsiMessageRecievedIntegrationEventHandler>(NewRsiMessageRecievedIntegrationEvent.EVENT_NAME);
+            eventBus.Subscribe<RsiMessagePublishedIntegrationEvent, RsiMessagePublishedIntegrationEventHandler>(RsiMessagePublishedIntegrationEvent.EVENT_NAME);
 
             app.Run();
         }
